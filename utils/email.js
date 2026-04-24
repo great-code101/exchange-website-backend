@@ -19,9 +19,9 @@ const getTransporter = async () => {
         }
     });
 
-    console.log('Mail service initialised.');
-    console.log('Ethereal inbox:', `https://ethereal.email/login`);
-    console.log('Login with:', account.user, '/', account.pass);
+    console.log('Mail service ready.');
+    console.log('Ethereal inbox: https://ethereal.email/login');
+    console.log('Credentials:', account.user, '/', account.pass);
 
     return transporter;
 };
@@ -55,8 +55,10 @@ const sendPasswordResetEmail = async (toEmail, resetUrl) => {
         `
     });
 
-    // Returns the Ethereal preview URL so you can inspect the email in the terminal
-    return nodemailer.getTestMessageUrl(info);
+    const previewUrl = nodemailer.getTestMessageUrl(info);
+    console.log('Password reset email dispatched.');
+    console.log('Preview URL:', previewUrl);
+    return previewUrl;
 };
 
 module.exports = { sendPasswordResetEmail };
