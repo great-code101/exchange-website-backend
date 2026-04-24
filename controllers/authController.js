@@ -81,3 +81,21 @@ exports.login = async (req, res) => {
         });
     }
 };
+
+// --- GET PROFILE ---
+exports.getProfile = async (req, res) => {
+    try {
+        // req.user is populated by the protect middleware
+        res.status(200).json({
+            status: 'success',
+            data: {
+                user: req.user
+            }
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'error',
+            message: err.message
+        });
+    }
+};
