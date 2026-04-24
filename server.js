@@ -7,12 +7,17 @@ const cookieParser = require('cookie-parser');
 // Load environment variables
 dotenv.config();
 
+const authRoutes = require('./routes/authRoutes');
+
 const app = express();
 
 // Middleware
 app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
+
+// Routes
+app.use('/api/auth', authRoutes);
 
 // Basic Route for testing
 app.get('/', (req, res) => {
