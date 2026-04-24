@@ -17,9 +17,11 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, 'Please provide a password'],
-        minlength: 6,
-        select: false // This hides the password by default when fetching users
-    }
+        minlength: 8,
+        select: false
+    },
+    passwordResetToken: String,
+    passwordResetExpires: Date
 }, { timestamps: true });
 
 // Hash password before saving (Mongoose 7+ async hooks don't use next())
