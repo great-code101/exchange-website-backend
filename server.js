@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 dotenv.config();
 
 const authRoutes = require('./routes/authRoutes');
+const cryptoRoutes = require('./routes/cryptoRoutes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/crypto', cryptoRoutes);
 
 // Basic Route for testing
 app.get('/', (req, res) => {
