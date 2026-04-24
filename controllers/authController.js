@@ -1,10 +1,30 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// Function to create JWT Token
-const signToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, {
+// Function to create and send JWT Token via Cookie
+const createSendToken = (user, statusCode, res) => {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
         expiresIn: '90d'
+    });
+
+    const cookieOptions = {
+        expires: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
+        httpOnly: true // Secure: JS cannot access the cookie
+    };
+
+    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+    res.cookie('jwt', token, cookieOptions);
+
+    // Remove password from output
+    user.password = undefined;
+
+    res.status(statusCode).json({
+        status: 'success',
+        token,
+        data: {
+            user
+        }
     });
 };
 
@@ -19,18 +39,7 @@ exports.register = async (req, res) => {
             password
         });
 
-        const token = signToken(newUser._id);
-
-        // Remove password from output
-        newUser.password = undefined;
-
-        res.status(201).json({
-            status: 'success',
-            token,
-            data: {
-                user: newUser
-            }
-        });
+        createSendToken(newUser, 201, res);
     } catch (err) {
         res.status(400).json({
             status: 'error',
@@ -63,17 +72,7 @@ exports.login = async (req, res) => {
         }
 
         // 3) If everything is okay, send token to client
-        const token = signToken(user._id);
-
-        user.password = undefined;
-
-        res.status(200).json({
-            status: 'success',
-            token,
-            data: {
-                user
-            }
-        });
+        createSendToken(user, 200, res);
     } catch (err) {
         res.status(400).json({
             status: 'error',
