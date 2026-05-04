@@ -1,40 +1,44 @@
 const nodemailer = require('nodemailer');
 const dns = require('dns');
-dns.setDefaultResultOrder('ipv4first');
+
+// Resolve Gmail SMTP to IPv4 address (Render free tier blocks IPv6 outbound)
+const resolveIPv4 = (hostname) => {
+    return new Promise((resolve, reject) => {
+        dns.resolve4(hostname, (err, addresses) => {
+            if (err) return reject(err);
+            resolve(addresses[0]);
+        });
+    });
+};
 
 // Determines the correct transporter based on available environment variables.
 // Uses Gmail if credentials are set, otherwise falls back to Ethereal for local testing.
 const createTransporter = async () => {
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-        const service = process.env.EMAIL_SERVICE || 'gmail';
+        // Resolve smtp.gmail.com to an IPv4 address to avoid Render IPv6 issues
+        let gmailHost = 'smtp.gmail.com';
+        try {
+            gmailHost = await resolveIPv4('smtp.gmail.com');
+            console.log(`Resolved smtp.gmail.com to IPv4: ${gmailHost}`);
+        } catch (err) {
+            console.log('Could not resolve IPv4, falling back to hostname');
+        }
 
-        const smtpOptions = {
-            gmail: {
-                host: 'smtp.gmail.com',
-                port: 465,
-                secure: true,
-                family: 4, // Force IPv4 to fix Render ENETUNREACH IPv6 error
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS
-                }
+        const transport = nodemailer.createTransport({
+            host: gmailHost,
+            port: 465,
+            secure: true,
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
             },
-            outlook: {
-                host: 'smtp.office365.com',
-                port: 587,
-                secure: false,
-                auth: {
-                    user: process.env.EMAIL_USER,
-                    pass: process.env.EMAIL_PASS
-                }
+            tls: {
+                servername: 'smtp.gmail.com' // Required for TLS cert validation when using IP
             }
-        };
-
-        const config = smtpOptions[service] || smtpOptions.gmail;
-        const transport = nodemailer.createTransport(config);
+        });
 
         await transport.verify();
-        console.log(`Mail service connected via ${service}.`);
+        console.log('Mail service connected via Gmail.');
         return { transport, isReal: true };
     }
 
