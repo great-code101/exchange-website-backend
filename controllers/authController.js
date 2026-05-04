@@ -34,6 +34,9 @@ exports.register = async (req, res) => {
         });
         createSendToken(newUser, 201, res);
     } catch (err) {
+        if (err.code === 11000) {
+            return res.status(400).json({ status: 'error', message: 'An account with this email already exists.' });
+        }
         res.status(400).json({ status: 'error', message: err.message });
     }
 };
