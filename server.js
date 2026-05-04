@@ -33,6 +33,19 @@ app.use(cookieParser());
 const authRoutes = require('./routes/authRoutes');
 const cryptoRoutes = require('./routes/cryptoRoutes');
 
+// Root route — shows API info when teacher clicks the backend link
+app.get('/', (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        message: 'Crypto Exchange API is running',
+        version: '1.0.0',
+        endpoints: {
+            auth: '/api/auth (POST /register, POST /login, GET /profile, POST /forgotPassword, PATCH /resetPassword/:token)',
+            crypto: '/api/crypto (GET /, GET /gainers, GET /new)'
+        }
+    });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/crypto', cryptoRoutes);
 
