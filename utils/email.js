@@ -1,4 +1,6 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
 
 // Determines the correct transporter based on available environment variables.
 // Uses Gmail if credentials are set, otherwise falls back to Ethereal for local testing.
